@@ -18,7 +18,7 @@
       font-size: 1.13em;
       line-height: 1.9em;
     }
-    .rounds-row { display: flex; flex-direction: column; justify-content: space-between; gap: 22px; margin-top: 28px;}
+    .rounds-row { display: flex; flex-direction: column; gap: 22px; margin-top: 28px;}
     .round-block { flex: 1 1 0; min-width: 240px; background: #f5f8ff; border-radius: 12px; padding: 18px 12px 18px 16px; box-shadow: 0 2px 4px #0001; }
     .roundid-label { color: #555; font-size: 1.05em; font-weight: bold; }
     .datetime-label { color: #2366aa; margin-bottom:6px; font-weight: bold; }
@@ -50,6 +50,7 @@
       <ol>
         <li>使用智能合約自動化交易，完全公平公開，所有數據鏈上可查，<b>中獎後合約自動執行派彩，不存在中獎不出款的情況</b></li>
         <li>遊戲規則簡單，<b>0.001 ETH</b> 為一張彩票，任何地址對合約地址轉帳0.001 ETH 即得一張彩票</li>
+        <li>轉帳非0.001 ETH倍數的金額。將扣除0.001手續費後，返還原地址</li>
         <li>每個錢包地址上限一局只能投注 <b>100 張彩票（0.1 ETH）</b>。</li>
         <li>本遊戲部署於 <b>Arbitrum One 公鏈</b>，速度快，手續費極低。</li>
         <li>當局最小遊戲人數為3人 <b>若小於3人，開獎時則自動按原地址返回下注金額</b></li>
@@ -73,190 +74,9 @@
     <div id="result"></div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
-  <script>
-    // ethers 連線與合約 ABI
-    const abi = [
-      "function currentRoundId() public view returns (uint256)",
-      "function rounds(uint256) public view returns (uint256 totalAmount, uint256 totalTickets, bool drawn)",
-      "function getRoundPlayers(uint256 roundId) external view returns (address[] memory)",
-      "event Winner(uint256 roundId, address first, address second, address third, uint256 amount1, uint256 amount2, uint256 amount3)"
-    ];
-    const contractAddress = "0x79bF1a51d6d929336eF3d3419DacC77Fdf5D08c7";
-    const rpc = "https://arb1.arbitrum.io/rpc";
-    let timer = null;
-    let countdownTimers = []; // 所有倒數計時器
-
-    // 合約地址點擊複製
-    function copyContractAddr(elem) {
-      const addr = elem.innerText.trim();
-      navigator.clipboard.writeText(addr).then(() => {
-        elem.classList.add("copied");
-        setTimeout(() => {
-          elem.classList.remove("copied");
-        }, 950);
-      });
-    }
-
-    // 將局號直接當UTC小時
-    function roundIdToDate(roundId) {
-      const ts = Number(roundId) * 3600 + 16 * 3600; // 加8小時
-      const dt = new Date(ts * 1000);
-      return `${dt.getFullYear()}年${String(dt.getMonth() + 1).padStart(2, "0")}月${String(dt.getDate()).padStart(2, "0")}日 ${String(dt.getHours()).padStart(2, "0")}時`;
-    }
-
-    // 直接回傳開獎UTC秒數（該小時+56分鐘）
-    function getOpenTimestamp(roundId) {
-      return Number(roundId) * 3600 + 56 * 60 - 8 * 3600; // 局開始+56分鐘+8小時
-    }
-
-    function formatCountdown(secs) {
-      if (secs < 0) return "已開獎";
-      const h = Math.floor(secs / 3600);
-      const m = Math.floor((secs % 3600) / 60);
-      const s = secs % 60;
-      return `${h > 0 ? h + "小時" : ""}${m > 0 ? m + "分" : ""}${s}秒`;
-    }
-
-    // 查詢開獎事件
-    // 這是正確抓法，不過濾參數，全部查出來再手動比對 roundId
-    async function getWinnerInfo(contract, roundId) {
-      try {
-        // 不過濾參數，只查事件型態
-        const logs = await contract.queryFilter("Winner", 'earliest', 'latest');
-        if (!logs || logs.length === 0) return null;
-        // 找最後一筆符合 roundId 的事件
-        const evt = logs.reverse().find(x => x.args.roundId.toString() === String(roundId));
-        if (!evt) return null;
-        return {
-          first: evt.args.first,
-          second: evt.args.second,
-          third: evt.args.third,
-          amount1: evt.args.amount1,
-          amount2: evt.args.amount2,
-          amount3: evt.args.amount3
-        };
-      } catch (e) {
-        return null;
-      }
-    }
-
-    // 渲染多局資訊
-    async function renderRounds(roundIds, highlightId = null) {
-      // 清掉所有倒數計時器
-      countdownTimers.forEach(t => clearInterval(t));
-      countdownTimers = [];
-      const provider = new ethers.JsonRpcProvider(rpc);
-      const contract = new ethers.Contract(contractAddress, abi, provider);
-
-      let allHtml = `<div class="rounds-row">`;
-      const maxRoundId = Math.max(...roundIds);
-      for (const rid of roundIds) {
-        try {
-          const [round, players, winnerInfo] = await Promise.all([
-            contract.rounds(rid),
-            contract.getRoundPlayers(rid),
-            getWinnerInfo(contract, rid)
-          ]);
-          const totalAmount = ethers.formatEther(round.totalAmount);
-          const totalTickets = round.totalTickets.toString();
-          let roundTitle = highlightId && rid === highlightId ? "<span style='color:#e72;'>（查詢局）</span>" : (rid === maxRoundId ? "（當前局）" : "");
-
-          // 只有當前局顯示開獎時間
-          let openTimeHtml = "";
-          if (rid === maxRoundId) {
-            const openTs = getOpenTimestamp(rid);
-            let left = Math.floor(openTs - Date.now() / 1000);
-            const countdownId = "countdown_" + rid;
-            openTimeHtml = `
-              <div class="opentime-label">
-                開獎時間：${new Date(openTs * 1000).toLocaleString("zh-TW", {hour12:false})}<br>
-                <span class="countdown" id="${countdownId}">${formatCountdown(left)}</span>
-              </div>
-            `;
-          }
-
-          allHtml += `
-            <div class="round-block">
-              <div class="roundid-label">局號：${rid} ${roundTitle}</div>
-              <div class="datetime-label">時間：${roundIdToDate(rid)}</div>
-              ${openTimeHtml}
-              <div class="subitem"><b>投注總金額：</b>${totalAmount} ETH</div>
-              <div class="subitem"><b>投注人數：</b>${totalTickets}</div>
-              <div class="subitem"><b>本局投注地址：</b>
-                <ul>
-                  ${players.length === 0 ? "<li>尚無投注</li>" : players.map(x=>`<li>${x}</li>`).join("")}
-                </ul>
-              </div>
-              <div class="subitem"><b>中獎紀錄：</b>
-                ${winnerInfo ? `
-                  <div class="winner-block">
-                    <b>第一名：</b>${winnerInfo.first}<br>獎金：${ethers.formatEther(winnerInfo.amount1)} ETH<br>
-                    <b>第二名：</b>${winnerInfo.second}<br>獎金：${ethers.formatEther(winnerInfo.amount2)} ETH<br>
-                    <b>第三名：</b>${winnerInfo.third}<br>獎金：${ethers.formatEther(winnerInfo.amount3)} ETH
-                  </div>
-                ` : `<span style="color:#aaa;">尚未開獎或無紀錄</span>`}
-              </div>
-            </div>
-          `;
-        } catch {
-          allHtml += `<div class="round-block"><div class="error">查詢失敗或無此局號：${rid}</div></div>`;
-        }
-      }
-      allHtml += "</div>";
-      document.getElementById("result").innerHTML = allHtml;
-
-      // 只有當前局啟動倒數
-      const countdownId = "countdown_" + maxRoundId;
-      const openTs = getOpenTimestamp(maxRoundId);
-      function updateCountdown() {
-        const now = Math.floor(Date.now() / 1000);
-        const left = Math.floor(openTs - now);
-        const el = document.getElementById(countdownId);
-        if (el) el.textContent = formatCountdown(left);
-      }
-      updateCountdown();
-      countdownTimers.push(setInterval(updateCountdown, 1000));
-    }
-
-    // 查詢最新局
-    async function queryLatestRounds() {
-      try {
-        const provider = new ethers.JsonRpcProvider(rpc);
-        const contract = new ethers.Contract(contractAddress, abi, provider);
-        const nowRoundId = await contract.currentRoundId();
-        const roundIds = Array.from({length: 24}, (_, i) => Number(nowRoundId) - i);
-
-        await renderRounds(roundIds);
-      } catch(e) {
-        document.getElementById("result").innerHTML = `<div class='error'>查詢失敗：${e}</div>`;
-      }
-    }
-
-    // 搜尋指定局
-    async function onSearch() {
-      const val = document.getElementById("searchId").value.trim();
-      if (!val || isNaN(val)) return;
-      if (timer) clearInterval(timer);
-      const roundId = Number(val);
-      const roundIds = [roundId, roundId - 1, roundId - 2];
-      await renderRounds(roundIds, roundId);
-    }
-
-    // 回到最新局（**已移除自動定時刷新，只查詢一次**）
-    function resetAuto() {
-      document.getElementById("searchId").value = "";
-      queryLatestRounds();
-      if (timer) clearInterval(timer); // 保險起見，確保沒有定時器
-      // 不再啟動 setInterval
-    }
-
-    // 頁面首次載入只查詢一次，不再自動刷新
-    queryLatestRounds();
-    // 已取消自動 setInterval
-  </script>
+  <script src="main.js"></script>
   <!--Start of Tawk.to Script-->
   <script type="text/javascript">
-  // Tawk.to 客服插件初始化
   var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
   (function(){
     var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
@@ -267,6 +87,5 @@
     s0.parentNode.insertBefore(s1,s0);
   })();
   </script>
-  <!--End of Tawk.to Script-->
 </body>
 </html>
