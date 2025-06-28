@@ -120,7 +120,7 @@ const abi = [
 		  <div class="roundid-label">局號：${rid} ${roundTitle}</div>
 		  <div class="datetime-label">可下注時間：${roundIdToDate(rid)} 至 ${roundIdToDate(rid+1)} </div>
 		  ${openTimeHtml}
-		  <div class="subitem"><b>投注總金額：</b>${totalAmount} ETH</div>
+		  <div class="subitem"><b>當前獎池(總投注總金額)：</b>${totalAmount} ETH</div>
 		  <div class="subitem"><b>投注人數：</b>${totalTickets}</div>
 		  <div class="subitem"><b>本局投注地址：</b>
 			<ul>
