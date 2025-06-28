@@ -63,9 +63,7 @@
       0x53e0E956C923De3c656A663B1015CDd25a8F3336
       <span class="copied-tip" id="copiedTip" style="right:20px;"></span>
     </div>
-    <!-- <label>Arbitrum RPC</label>
-    <div class="readonly" style="user-select: all;">https://arb1.arbitrum.io/rpc</div> -->
-    <div class="autorefresh">每10秒自動更新（當前局＋前兩局，搜尋後停止自動刷新）</div>
+    <div class="autorefresh">自動刷新已取消（點擊「回最新局」手動刷新最新資料）</div>
     <div class="search-row">
       <label for="searchId">查詢指定局號：</label>
       <input type="number" id="searchId" placeholder="請輸入局號" />
@@ -247,18 +245,31 @@
       await renderRounds(roundIds, roundId);
     }
 
-    // 回到自動最新
+    // 回到最新局（**已移除自動定時刷新，只查詢一次**）
     function resetAuto() {
       document.getElementById("searchId").value = "";
       queryLatestRounds();
-      if (timer) clearInterval(timer);
-      timer = setInterval(queryLatestRounds, 10000);
+      if (timer) clearInterval(timer); // 保險起見，確保沒有定時器
+      // 不再啟動 setInterval
     }
 
-    // 頁面首次載入
+    // 頁面首次載入只查詢一次，不再自動刷新
     queryLatestRounds();
-    timer = setInterval(queryLatestRounds, 10000);
+    // 已取消自動 setInterval
   </script>
+  <!--Start of Tawk.to Script-->
+  <script type="text/javascript">
+  // Tawk.to 客服插件初始化
+  var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+  (function(){
+    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+    s1.async=true;
+    s1.src='https://embed.tawk.to/646b979474285f0ec46cf3be/1iuqg5nan';
+    s1.charset='UTF-8';
+    s1.setAttribute('crossorigin','*');
+    s0.parentNode.insertBefore(s1,s0);
+  })();
+  </script>
+  <!--End of Tawk.to Script-->
 </body>
 </html>
-
