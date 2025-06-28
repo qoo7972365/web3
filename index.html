@@ -18,7 +18,7 @@
       font-size: 1.13em;
       line-height: 1.9em;
     }
-    .rounds-row { display: flex; flex-direction: row; justify-content: space-between; gap: 22px; margin-top: 28px;}
+    .rounds-row { display: flex; flex-direction: column; justify-content: space-between; gap: 22px; margin-top: 28px;}
     .round-block { flex: 1 1 0; min-width: 240px; background: #f5f8ff; border-radius: 12px; padding: 18px 12px 18px 16px; box-shadow: 0 2px 4px #0001; }
     .roundid-label { color: #555; font-size: 1.05em; font-weight: bold; }
     .datetime-label { color: #2366aa; margin-bottom:6px; font-weight: bold; }
@@ -58,12 +58,12 @@
         <li>每局開出三位得獎者，第一位獲得獎池50%金額，第一位獲得獎池30%金額，第一位獲得獎池20%金額<b></li>
       </ol>
     </div>
-    <label>合約地址</label>
+    <label>合約地址(點擊下方地址複製)</label>
     <div class="readonly" id="copyAddr" onclick="copyContractAddr(this)">
       0x79bF1a51d6d929336eF3d3419DacC77Fdf5D08c7
       <span class="copied-tip" id="copiedTip" style="right:20px;"></span>
     </div>
-    <div class="autorefresh">自動刷新已取消（點擊「回最新局」手動刷新最新資料）</div>
+    <div class="autorefresh">點擊「回最新局」手動刷新最新資料</div>
     <div class="search-row">
       <label for="searchId">查詢指定局號：</label>
       <input type="number" id="searchId" placeholder="請輸入局號" />
@@ -224,11 +224,8 @@
         const provider = new ethers.JsonRpcProvider(rpc);
         const contract = new ethers.Contract(contractAddress, abi, provider);
         const nowRoundId = await contract.currentRoundId();
-        const roundIds = [
-          Number(nowRoundId),
-          Number(nowRoundId) - 1,
-          Number(nowRoundId) - 2
-        ];
+        const roundIds = Array.from({length: 24}, (_, i) => Number(nowRoundId) - i);
+
         await renderRounds(roundIds);
       } catch(e) {
         document.getElementById("result").innerHTML = `<div class='error'>查詢失敗：${e}</div>`;
