@@ -7,61 +7,91 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- SEO: 加入 favicon 標籤 -->
   <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <title>智能合約聚寶盆</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: "Microsoft JhengHei", Arial, sans-serif; background: #f6f7fb; padding: 30px; }
-    .container { max-width: 1080px; margin: 40px auto; background: #fff; border-radius: 20px; box-shadow: 0 2px 12px #0001; padding: 32px; }
-    h1 { color: #2e78d6; }
+    body { font-family: "Microsoft JhengHei", Arial, sans-serif; background: #f6f7fb; padding: 16px; }
+    .container { max-width: 1080px; margin: 24px auto; background: #fff; border-radius: 20px; box-shadow: 0 2px 12px #0001; padding: 18px; }
+    h1 { color: #2e78d6; font-size: 1.5em; }
     .desc-block {
       background: #f0f8ff;
       border-left: 5px solid #2e78d6;
-      margin: 18px 0 28px 0;
-      padding: 18px 24px;
+      margin: 12px 0 22px 0;
+      padding: 14px 12px;
       border-radius: 12px;
       color: #14548e;
-      font-size: 1.13em;
-      line-height: 1.9em;
+      font-size: 1em;
+      line-height: 1.7em;
     }
-    .rounds-row { display: flex; flex-direction: column; gap: 22px; margin-top: 28px;}
-    .round-block { flex: 1 1 0; min-width: 240px; background: #f5f8ff; border-radius: 12px; padding: 18px 12px 18px 16px; box-shadow: 0 2px 4px #0001; }
-    .roundid-label { color: #555; font-size: 1.05em; font-weight: bold; }
-    .datetime-label { color: #2366aa; margin-bottom:6px; font-weight: bold; }
-    .opentime-label { color: #C17C00; font-weight: bold; margin-bottom: 8px; }
-    .countdown { color: #e43; font-size: 1.08em; font-weight: bold; }
+    .rounds-row { display: flex; flex-direction: column; gap: 18px; margin-top: 18px;}
+    .round-block { flex: 1 1 0; min-width: 180px; background: #f5f8ff; border-radius: 12px; padding: 12px 6px 12px 8px; box-shadow: 0 2px 4px #0001; }
+    .roundid-label { color: #555; font-size: 1em; font-weight: bold; }
+    .datetime-label { color: #2366aa; margin-bottom:4px; font-weight: bold; }
+    .opentime-label { color: #C17C00; font-weight: bold; margin-bottom: 6px; }
+    .countdown { color: #e43; font-size: 1em; font-weight: bold; }
     .subitem { margin-bottom: 6px; }
-    ul { padding-left: 18px; margin: 8px 0; word-break: break-all;}
+    ul { padding-left: 16px; margin: 8px 0; word-break: break-all;}
     .winner-block { background: #d7fbe2; border-radius: 8px; margin: 6px 0 0 0; padding: 8px 10px; }
-    .autorefresh { color: #666; font-size: 0.98em; margin-top: 4px; }
-    .readonly { padding: 8px; width: 100%; border-radius: 8px; border: 1px solid #ddd; font-size: 1.1em; background: #f7f7f7; color: #888; user-select: all; cursor: pointer; position: relative;}
+    .autorefresh { color: #666; font-size: 0.96em; margin-top: 4px; }
+    .readonly { padding: 8px; width: 100%; border-radius: 8px; border: 1px solid #ddd; font-size: 1.07em; background: #f7f7f7; color: #888; user-select: all; cursor: pointer; position: relative;}
     .readonly.copied { background: #b2ebc6; color: #2e7d32; transition: background 0.4s, color 0.4s;}
     .copied-tip { position: absolute; right: 14px; top: 8px; color: #009c35; font-size: 0.96em; pointer-events: none; opacity: 0; transition: opacity 0.3s;}
     .readonly.copied .copied-tip { opacity: 1; }
-    .error { background: #ffd7d7; color: #b22; margin:16px 0 0 0; padding:12px; border-radius:8px;}
-    .search-row { display: flex; gap: 10px; margin: 18px 0 0 0; align-items: center; }
-    .search-row input { padding: 7px 10px; border-radius: 7px; border: 1px solid #bbb; width: 180px; font-size: 1em;}
-    .search-row button { background: #2189dc; color: #fff; border: none; border-radius: 7px; padding: 8px 16px; font-size: 1em; cursor: pointer;}
+    .error { background: #ffd7d7; color: #b22; margin:12px 0 0 0; padding:10px; border-radius:8px;}
+    .search-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0 0; align-items: center; }
+    .search-row input { padding: 9px 12px; border-radius: 7px; border: 1px solid #bbb; width: 130px; font-size: 1em;}
+    .search-row button { background: #2189dc; color: #fff; border: none; border-radius: 7px; padding: 10px 18px; font-size: 1em; cursor: pointer;}
     .search-row button:active { background: #165e9f;}
-    @media (max-width: 950px) {
-      .rounds-row { flex-direction: column; gap: 18px;}
-      .round-block { min-width: unset; }
+    .footer-links { margin-top: 22px; text-align: center; color: #888; font-size: 0.95em;}
+    .footer-links a { color: #2366aa; text-decoration: underline; margin: 0 8px;}
+    @media (max-width: 600px) {
+      body { padding: 4px; }
+      .container { padding: 6px; border-radius: 10px; }
+      .desc-block { font-size: 0.98em; padding: 10px 6px;}
+      h1 { font-size: 1.08em; }
+      .round-block { padding: 6px 2px 6px 2px; font-size: 0.98em;}
+      .search-row input { width: 90px; font-size: 0.98em;}
+      .footer-links { font-size: 0.88em; }
     }
+
   </style>
 </head>
 <body>
   <div class="container">
     <h1>ArbitrumOne 智能合約聚寶盆 0.001 ETH 一注</h1>
     <div class="desc-block">
+      <p>
+        智能合約聚寶盆是一個部署在 <b>Arbitrum One</b> 公鏈上的去中心化彩票遊戲平台，專為以太坊生態用戶打造。所有遊戲規則、投注紀錄與開獎流程，全部由智能合約自動化執行，確保每一局都公開透明、無法竄改。玩家無需信任第三方，所有資料都能隨時在區塊鏈上查詢。無論是資深玩家還是新手，都能輕鬆體驗區塊鏈彩票的公平與樂趣。
+      </p>
+      <p>
+        只要使用自己的加密錢包（如 MetaMask 等），選擇 <b>Arbitrum One</b> 網路，向合約地址發送 0.001 ETH，就能自動獲得一張彩票。每小時自動開獎一次，系統隨機抽出三位得獎者，並即時將獎金發送到中獎地址。遊戲流程完全自動，不需人工介入，任何中獎都能及時獲得派彩。
+      </p>
+      <p style="color:#b22;">
+        【重要提醒】<br>
+        <b>請確認你的錢包已切換到 Arbitrum One 網路！</b><br>
+        雖然以太坊（Ethereum）主網和 Arbitrum One 的地址格式相同，但兩條鏈的資產是獨立分開的。請務必確保你的錢包資產是在 <b>Arbitrum One</b> 上，才能參與本遊戲。如果從以太坊主網直接轉帳到合約地址，資產將不會進入遊戲，且無法自動退回。
+      </p>
+      <p>
+        以下為本平台詳細遊戲規則：
+      </p>
       <ol>
-        <li>使用智能合約自動化交易，完全公平公開，所有數據鏈上可查，<b>中獎後合約自動執行派彩，不存在中獎不出款的情況</b></li>
-        <li>遊戲規則簡單，<b>0.001 ETH</b> 為一張彩票，任何地址對合約地址轉帳0.001 ETH 即得一張彩票</li>
+        <li>使用智能合約自動化交易，完全公平公開，所有數據鏈上可查，中獎後合約自動執行派彩，不存在中獎不出款的情況。</li>
+        <li>遊戲規則簡單，<b>0.001 ETH</b> 為一張彩票，任何地址對合約地址轉帳 0.001 ETH 即得一張彩票。</li>
         <li>每個錢包地址上限一局只能投注 <b>100 張彩票（0.1 ETH）</b>。</li>
         <li>本遊戲部署於 <b>Arbitrum One 公鏈</b>，速度快，手續費極低。</li>
-        <li>當局最小遊戲人數為3人 <b>若小於3人，開獎時則自動按原地址返回下注金額</b></li>
-        <li>每小時的第三分鐘自動開獎</li>
-        <li>只能使用私有錢包地址，中獎按原地址返還</li>
-        <li>每局開出三位得獎者，第一位獲得獎池50%金額，第一位獲得獎池30%金額，第一位獲得獎池20%金額</li>
+        <li>當局最小遊戲人數為 3 人，若小於 3 人，開獎時則自動按原地址返回下注金額。</li>
+        <li>每小時的第三分鐘自動開獎。</li>
+        <li>只能使用私有錢包地址，中獎按原地址返還。</li>
+        <li>每局開出三位得獎者，第一位獲得獎池 50% 金額，第二位獲得獎池 30% 金額，第三位獲得獎池 20% 金額。</li>
       </ol>
+      <p>
+        歡迎所有玩家體驗真正的去中心化公平遊戲，現在就用你的錢包地址參與，每一筆投注、開獎與派彩都完全鏈上可查，讓你玩得安心又放心！
+      </p>
+      <!-- <p>
+        <b>常見問題 Q&A：</b><br>
+        Q：我能用以太坊主網（Ethereum Mainnet）上的 ETH 參與遊戲嗎？<br>
+        A：<b>不能。</b>你必須使用 Arbitrum One 網路的 ETH。地址雖然格式一樣，但兩條鏈的資產獨立，請務必選擇 Arbitrum One 網路，並確認錢包中有 Arbitrum ETH。
+      </p> -->
     </div>
     <label>合約地址(點擊下方地址複製)</label>
     <div class="readonly" id="copyAddr" onclick="copyContractAddr()">
