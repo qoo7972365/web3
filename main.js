@@ -7,10 +7,17 @@ const abi = [
   ];
   const contractAddress = "0x79bF1a51d6d929336eF3d3419DacC77Fdf5D08c7";
   const rpc = "https://arb1.arbitrum.io/rpc";
+  
+  // 單例 provider/contract
+  const provider = new ethers.JsonRpcProvider(rpc);
+  const contract = new ethers.Contract(contractAddress, abi, provider);
+  
+  // 全局狀態
   let countdownTimers = [];
   let loadedRounds = []; // 已加載成功的局號
   let minLoadedRoundId = null; // 已加載最小局號
-  
+  let globalCurrentRoundId = null; // 全局記錄
+
   // 儲存到localStorage
   function saveLoadedRounds() {
 	localStorage.setItem("loadedRounds", JSON.stringify(loadedRounds));
@@ -41,13 +48,14 @@ const abi = [
 	saveLoadedRounds();
   }
   
-  // 合約地址點擊複製
-  function copyContractAddr(elem) {
-	const addr = elem.innerText.trim();
+  function copyContractAddr() {
+	const addrElem = document.getElementById("contractAddr");
+	const tipElem = document.getElementById("copiedTip");
+	const addr = addrElem.textContent.trim();
 	navigator.clipboard.writeText(addr).then(() => {
-	  elem.classList.add("copied");
+	  tipElem.style.display = "inline";
 	  setTimeout(() => {
-		elem.classList.remove("copied");
+		tipElem.style.display = "none";
 	  }, 950);
 	});
   }
@@ -70,7 +78,7 @@ const abi = [
   }
   
   // 查詢開獎事件
-  async function getWinnerInfo(contract, roundId) {
+  async function getWinnerInfo(roundId) {
 	try {
 	  const logs = await contract.queryFilter("Winner", 'earliest', 'latest');
 	  if (!logs || logs.length === 0) return null;
@@ -90,12 +98,12 @@ const abi = [
   }
   
   // 加載單個 round 資料（成功才記錄）
-  async function fetchRoundBlock(contract, rid, highlightId, maxRoundId) {
+  async function fetchRoundBlock(rid, highlightId, maxRoundId) {
 	try {
 	  const [round, players, winnerInfo] = await Promise.all([
 		contract.rounds(rid),
 		contract.getRoundPlayers(rid),
-		getWinnerInfo(contract, rid)
+		getWinnerInfo(rid)
 	  ]);
 	  const totalAmount = ethers.formatEther(round.totalAmount);
 	  const totalTickets = round.totalTickets.toString();
@@ -140,28 +148,25 @@ const abi = [
 		`,
 		rid: rid
 	  }
-	} catch {
-	  return null; // 查詢失敗
+	} catch (e) {
+	  // 查詢失敗
+	  return null;
 	}
   }
   
-  // 一次加載三個有效局，失敗自動往下找
-  async function fetchNValidRounds(startFrom, n = 3, highlightId = null, append = false) {
-	const provider = new ethers.JsonRpcProvider(rpc);
-	const contract = new ethers.Contract(contractAddress, abi, provider);
-  
+  async function fetchNValidRounds(startFrom, n = 3, highlightId = null, append = false, currentRoundId = null) {
 	let html = append ? document.getElementById("result").innerHTML : `<div class="rounds-row">`;
 	let count = 0;
 	let rid = startFrom;
 	let fetchedIds = [];
-	let maxRoundId = startFrom;
+	let _currentRoundId = currentRoundId !== null ? currentRoundId : startFrom;
   
 	while (count < n && rid > 0) {
 	  if (loadedRounds.includes(rid)) {
 		rid--;
 		continue;
 	  }
-	  const block = await fetchRoundBlock(contract, rid, highlightId, maxRoundId);
+	  const block = await fetchRoundBlock(rid, highlightId, _currentRoundId); // 用正確的currentRoundId判斷
 	  if (block) {
 		html += block.html;
 		fetchedIds.push(rid);
@@ -178,28 +183,48 @@ const abi = [
   // 查詢最新三局
   async function queryLatestRounds(init = false) {
 	try {
-	  const provider = new ethers.JsonRpcProvider(rpc);
-	  const contract = new ethers.Contract(contractAddress, abi, provider);
 	  const nowRoundId = await contract.currentRoundId();
-	  // 初始只查三局（遇到查不到會自動往下找三個有效局）
-	  const {last} = await fetchNValidRounds(Number(nowRoundId), 3, null, false);
+	  globalCurrentRoundId = Number(nowRoundId); // 記錄
+	  const {last} = await fetchNValidRounds(globalCurrentRoundId, 3, null, false, globalCurrentRoundId);
 	  minLoadedRoundId = last + 1;
 	  saveLoadedRounds();
 	  if (init) document.getElementById("result").setAttribute('data-loaded', '1');
 	} catch(e) {
-	  document.getElementById("result").innerHTML = `<div class='error'>查詢失敗：${e}</div>`;
+	  document.getElementById("result").innerHTML = `<div class='error'>查詢失敗：${e.message || e}</div>`;
 	}
   }
   
-  // 查詢更多三局
-  async function queryMoreRounds() {
-	if (!minLoadedRoundId) return;
-	const {last, loaded} = await fetchNValidRounds(minLoadedRoundId - 1, 3, null, true);
-	if (loaded.length > 0) {
-	  minLoadedRoundId = last + 1;
-	  saveLoadedRounds();
-	}
-  }
+	// 設置查詢中鎖
+	let isLoadingRounds = false;
+
+	// 修改 queryMoreRounds，加鎖
+	async function queryMoreRounds() {
+		if (isLoadingRounds || !minLoadedRoundId) return;
+		isLoadingRounds = true;
+		try {
+		  const {last, loaded} = await fetchNValidRounds(minLoadedRoundId - 1, 3, null, true, globalCurrentRoundId); // 傳入正確的 currentRoundId
+		  if (loaded.length > 0) {
+			minLoadedRoundId = last + 1;
+			saveLoadedRounds();
+		  }
+		} finally {
+		  isLoadingRounds = false;
+		}
+	  }
+
+	// scroll 事件防抖（200ms 內最多觸發一次）
+	let scrollTimeout = null;
+	window.addEventListener("scroll", function() {
+	if (scrollTimeout) return;
+	scrollTimeout = setTimeout(async function() {
+		scrollTimeout = null;
+		if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 10) {
+		if (document.getElementById("result").getAttribute('data-loaded') === '1') {
+			await queryMoreRounds();
+		}
+		}
+	}, 200);
+	});
   
   // 監聽下滑
   window.addEventListener("scroll", async function() {
@@ -221,14 +246,14 @@ const abi = [
   }
   
   // 回到最新局
-  function resetAuto() {
+  async function resetAuto() {
 	document.getElementById("searchId").value = "";
 	clearLoadedRounds();
-	queryLatestRounds();
+	await queryLatestRounds();
   }
   
   // 頁面首次載入
   loadLoadedRounds();
-  clearLoadedRounds();  // 每次刷新直接清空（建議這樣最保險）
+  clearLoadedRounds();  // 每次刷新直接清空
   queryLatestRounds(true);
   
