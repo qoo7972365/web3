@@ -8,19 +8,11 @@
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <title id="page_title">智能合約聚寶盆</title>
   <style>
+    /* 你的原始 CSS 可直接複製，不需動 */
     body { font-family: "Microsoft JhengHei", Arial, sans-serif; background: #f6f7fb; padding: 16px; }
     .container { max-width: 1080px; margin: 24px auto; background: #fff; border-radius: 20px; box-shadow: 0 2px 12px #0001; padding: 18px; }
     h1 { color: #2e78d6; font-size: 1.5em; }
-    .desc-block {
-      background: #f0f8ff;
-      border-left: 5px solid #2e78d6;
-      margin: 12px 0 22px 0;
-      padding: 14px 12px;
-      border-radius: 12px;
-      color: #14548e;
-      font-size: 1em;
-      line-height: 1.7em;
-    }
+    .desc-block { background: #f0f8ff; border-left: 5px solid #2e78d6; margin: 12px 0 22px 0; padding: 14px 12px; border-radius: 12px; color: #14548e; font-size: 1em; line-height: 1.7em; }
     .rounds-row { display: flex; flex-direction: column; gap: 18px; margin-top: 18px;}
     .round-block { flex: 1 1 0; min-width: 180px; background: #f5f8ff; border-radius: 12px; padding: 12px 6px 12px 8px; box-shadow: 0 2px 4px #0001; }
     .roundid-label { color: #555; font-size: 1em; font-weight: bold; }
@@ -42,55 +34,12 @@
     .search-row button:active { background: #165e9f;}
     .footer-links { margin-top: 22px; text-align: center; color: #888; font-size: 0.95em;}
     .footer-links a { color: #2366aa; text-decoration: underline; margin: 0 8px;}
-    .lang-switch {
-      position: absolute;
-      right: 30px;
-      top: 18px;
-      z-index: 20;
-      user-select: none;
-    }
-    .lang-switch button {
-      background: #fff;
-      border: 1.5px solid #e5eaf3;
-      border-radius: 32px;
-      font-size: 1em;
-      color: #175b96;
-      padding: 8px 18px 8px 12px;
-      box-shadow: 0 2px 8px #0001;
-      cursor: pointer;
-      outline: none;
-      min-width: 110px;
-      display: flex;
-      align-items: center;
-      transition: border 0.2s, background 0.2s;
-    }
-    .lang-switch button:hover {
-      background: #f2f8ff;
-      border-color: #b9d6f8;
-    }
-    .lang-menu {
-      position: absolute;
-      right: 0;
-      top: 38px;
-      background: #fff;
-      border-radius: 18px;
-      box-shadow: 0 4px 16px #0002;
-      border: 1.5px solid #e5eaf3;
-      min-width: 132px;
-      font-size: 1em;
-      padding: 4px 0;
-      z-index: 99;
-    }
-    .lang-item {
-      padding: 10px 18px 10px 22px;
-      cursor: pointer;
-      transition: background 0.2s, color 0.2s;
-      color: #175b96;
-    }
-    .lang-item:hover {
-      background: #f0f8ff;
-      color: #2366aa;
-    }
+    .lang-switch { position: absolute; right: 30px; top: 18px; z-index: 20; user-select: none; }
+    .lang-switch button { background: #fff; border: 1.5px solid #e5eaf3; border-radius: 32px; font-size: 1em; color: #175b96; padding: 8px 18px 8px 12px; box-shadow: 0 2px 8px #0001; cursor: pointer; outline: none; min-width: 110px; display: flex; align-items: center; transition: border 0.2s, background 0.2s;}
+    .lang-switch button:hover { background: #f2f8ff; border-color: #b9d6f8; }
+    .lang-menu { position: absolute; right: 0; top: 38px; background: #fff; border-radius: 18px; box-shadow: 0 4px 16px #0002; border: 1.5px solid #e5eaf3; min-width: 132px; font-size: 1em; padding: 4px 0; z-index: 99;}
+    .lang-item { padding: 10px 18px 10px 22px; cursor: pointer; transition: background 0.2s, color 0.2s; color: #175b96;}
+    .lang-item:hover { background: #f0f8ff; color: #2366aa;}
     @media (max-width: 600px) {
       body { padding: 4px; }
       .container { padding: 6px; border-radius: 10px; }
@@ -105,186 +54,95 @@
 </head>
 <body>
   <div class="lang-switch" id="langSwitch">
-    <button onclick="toggleLangMenu()" id="currentLangBtn">🌏 中文</button>
+    <button onclick="toggleLangMenu()" id="currentLangBtn"></button>
     <div class="lang-menu" id="langMenu" style="display:none;">
       <div class="lang-item" onclick="switchLang('zh')">🌏 中文</div>
       <div class="lang-item" onclick="switchLang('en')">🇬🇧 English</div>
     </div>
   </div>
   <div class="container">
-    <h1 id="title">ArbitrumOne 智能合約聚寶盆 0.001 ETH 一注</h1>
+    <h1 id="title"></h1>
     <div class="desc-block" id="descBlock"></div>
-    <label id="labelContract">合約地址(點擊下方地址複製)</label>
+    <label id="labelContract"></label>
     <div class="readonly" id="copyAddr" onclick="copyContractAddr()">
       <span id="contractAddr">0x79bF1a51d6d929336eF3d3419DacC77Fdf5D08c7</span>
-      <span class="copied-tip" id="copiedTip" style="display:none;margin-left:12px;color:#13ae13;">已複製</span>
+      <span class="copied-tip" id="copiedTip" style="display:none;margin-left:12px;color:#13ae13;"></span>
     </div>
-    <div class="autorefresh" id="autorefreshTip">點擊「回最新局」手動刷新最新資料</div>
+    <div class="autorefresh" id="autorefreshTip"></div>
     <div class="search-row">
-      <label for="searchId" id="labelSearch">查詢指定局號：</label>
-      <input type="number" id="searchId" placeholder="請輸入局號" />
-      <button onclick="onSearch()" id="btnSearch">查詢</button>
-      <button onclick="resetAuto()" style="background:#32b66b;" id="btnReset">回最新局</button>
+      <label for="searchId" id="labelSearch"></label>
+      <input type="number" id="searchId" />
+      <button onclick="onSearch()" id="btnSearch"></button>
+      <button onclick="resetAuto()" style="background:#32b66b;" id="btnReset"></button>
     </div>
     <div id="result"></div>
   </div>
+  <script src="lang.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
   <script src="main.js"></script>
-  <!--Start of Tawk.to Script-->
+  <!-- 客服腳本保持原樣 -->
   <script type="text/javascript">
-  var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-  (function(){
-    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-    s1.async=true;
-    s1.src='https://embed.tawk.to/646b979474285f0ec46cf3be/1iuqg5nan';
-    s1.charset='UTF-8';
-    s1.setAttribute('crossorigin','*');
-    s0.parentNode.insertBefore(s1,s0);
-  })();
+    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+    (function(){
+      var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+      s1.async=true;
+      s1.src='https://embed.tawk.to/646b979474285f0ec46cf3be/1iuqg5nan';
+      s1.charset='UTF-8';
+      s1.setAttribute('crossorigin','*');
+      s0.parentNode.insertBefore(s1,s0);
+    })();
   </script>
   <script>
-  // 語言包資料（可自行擴充語言）
-  const langData = {
-    zh: {
-      langName: '中文',
-      btn: '🌏 中文',
-      menu: ['🌏 中文', '🇬🇧 English'],
-      title: 'ArbitrumOne 智能合約聚寶盆 0.001 ETH 一注',
-      desc: `<p>
-        智能合約聚寶盆是一個部署在 <b>Arbitrum One</b> 公鏈上的去中心化彩票遊戲平台，專為以太坊生態用戶打造。所有遊戲規則、投注紀錄與開獎流程，全部由智能合約自動化執行，確保每一局都公開透明、無法竄改。玩家無需信任第三方，所有資料都能隨時在區塊鏈上查詢。無論是資深玩家還是新手，都能輕鬆體驗區塊鏈彩票的公平與樂趣。
-      </p>
-      <p>
-        只要使用自己的加密錢包（如 MetaMask 等），選擇 <b>Arbitrum One</b> 網路，向合約地址發送 0.001 ETH，就能自動獲得一張彩票。每小時自動開獎一次，系統隨機抽出三位得獎者，並即時將獎金發送到中獎地址。遊戲流程完全自動，不需人工介入，任何中獎都能及時獲得派彩。
-      </p>
-      <p style="color:#b22;">
-        【重要提醒】<br>
-        <b>請確認你的錢包已切換到 Arbitrum One 網路！</b><br>
-        雖然以太坊（Ethereum）主網和 Arbitrum One 的地址格式相同，但兩條鏈的資產是獨立分開的。請務必確保你的錢包資產是在 <b>Arbitrum One</b> 上，才能參與本遊戲。如果從以太坊主網直接轉帳到合約地址，資產將不會進入遊戲，且無法自動退回。
-      </p>
-      <p>
-        以下為本平台詳細遊戲規則：
-      </p>
-      <ol>
-        <li>使用智能合約自動化交易，完全公平公開，所有數據鏈上可查，中獎後合約自動執行派彩，不存在中獎不出款的情況。</li>
-        <li>遊戲規則簡單，<b>0.001 ETH</b> 為一張彩票，任何地址對合約地址轉帳 0.001 ETH 即得一張彩票。</li>
-        <li>每個錢包地址上限一局只能投注 <b>100 張彩票（0.1 ETH）</b>。</li>
-        <li>本遊戲部署於 <b>Arbitrum One 公鏈</b>，速度快，手續費極低。</li>
-        <li>當局最小遊戲人數為 3 人，若小於 3 人，開獎時則自動按原地址返回下注金額。</li>
-        <li>每小時的第三分鐘自動開獎。</li>
-        <li>只能使用私有錢包地址，中獎按原地址返還。</li>
-        <li>每局開出三位得獎者，第一位獲得獎池 50% 金額，第二位獲得獎池 30% 金額，第三位獲得獎池 20% 金額。</li>
-      </ol>
-      <p>
-        歡迎所有玩家體驗真正的去中心化公平遊戲，現在就用你的錢包地址參與，每一筆投注、開獎與派彩都完全鏈上可查，讓你玩得安心又放心！
-      </p>`,
-      labelContract: '合約地址(點擊下方地址複製)',
-      copied: '已複製',
-      autorefresh: '點擊「回最新局」手動刷新最新資料',
-      labelSearch: '查詢指定局號：',
-      searchPh: '請輸入局號',
-      btnSearch: '查詢',
-      btnReset: '回最新局'
-    },
-    en: {
-      langName: 'English',
-      btn: '🇬🇧 English',
-      menu: ['🌏 中文', '🇬🇧 English'],
-      title: 'ArbitrumOne Blockchain Lottery 0.001 ETH per ticket',
-      desc: `<p>
-        The Blockchain Lottery is a decentralized game platform deployed on <b>Arbitrum One</b>, designed for Ethereum users. All rules, betting records, and draws are executed by smart contracts, ensuring transparency and tamper-proof results. Players do not need to trust any third party; all data is queryable on-chain, making the experience fair and open to all.
-      </p>
-      <p>
-        Use your own crypto wallet (such as MetaMask), select <b>Arbitrum One</b> network, and send 0.001 ETH to the contract address to get a ticket automatically. Each hour, a draw is held with three winners picked randomly by the contract, and prize money is instantly distributed to the winner addresses. The process is fully automated with no manual intervention.
-      </p>
-      <p style="color:#b22;">
-        [IMPORTANT REMINDER]<br>
-        <b>Please make sure your wallet is set to Arbitrum One!</b><br>
-        Although Ethereum mainnet and Arbitrum One share the same address format, assets are separate. Make sure your ETH is on <b>Arbitrum One</b> before participating. Sending from Ethereum mainnet will NOT enter the game and funds will NOT be auto-refunded.
-      </p>
-      <p>
-        Game Rules:
-      </p>
-      <ol>
-        <li>All transactions, draws, and payouts are automated via smart contract and visible on-chain. Winnings are paid out instantly by the contract.</li>
-        <li>Each ticket costs <b>0.001 ETH</b>. Send 0.001 ETH per ticket to the contract address to participate.</li>
-        <li>Maximum 100 tickets (0.1 ETH) per wallet per round.</li>
-        <li>Deployed on <b>Arbitrum One</b> for low fees and fast confirmation.</li>
-        <li>At least 3 players are required per round; otherwise, bets are refunded.</li>
-        <li>The draw is held automatically at the third minute of each hour.</li>
-        <li>Only private wallets accepted; prizes are returned to the original address.</li>
-        <li>Three winners per round: 50%, 30%, and 20% of the prize pool.</li>
-      </ol>
-      <p>
-        Welcome to experience real decentralized and fair lottery. Every bet, draw, and payout is fully on-chain. Participate now!
-      </p>`,
-      labelContract: 'Contract address (click to copy below)',
-      copied: 'Copied!',
-      autorefresh: 'Click "Latest Round" to refresh the latest data',
-      labelSearch: 'Search by round number:',
-      searchPh: 'Enter round number',
-      btnSearch: 'Search',
-      btnReset: 'Latest Round'
+    // 語言切換UI控制
+    function setLangUI() {
+      const d = window.langData[window.currentLang] || window.langData.zh;
+      document.getElementById('currentLangBtn').innerHTML = d.btn;
+      document.getElementById('title').innerHTML = d.title;
+      document.getElementById('descBlock').innerHTML = d.desc;
+      document.getElementById('labelContract').innerHTML = d.labelContract;
+      document.getElementById('autorefreshTip').innerHTML = d.autorefresh;
+      document.getElementById('labelSearch').innerHTML = d.labelSearch;
+      document.getElementById('searchId').placeholder = d.searchPh;
+      document.getElementById('btnSearch').innerHTML = d.btnSearch;
+      document.getElementById('btnReset').innerHTML = d.btnReset;
+      document.getElementById('copiedTip').innerHTML = d.copied;
+      document.title = d.title;
+      document.getElementById('page_title')?.setAttribute('content', d.title);
     }
-  };
-
-  let currentLang = localStorage.getItem('lotto_lang') || 'zh';
-  // UI初始化
-  function setLangUI() {
-    const d = langData[currentLang];
-    document.getElementById('currentLangBtn').innerHTML = d.btn;
-    document.getElementById('title').innerHTML = d.title;
-    document.getElementById('descBlock').innerHTML = d.desc;
-    document.getElementById('labelContract').innerHTML = d.labelContract;
-    document.getElementById('autorefreshTip').innerHTML = d.autorefresh;
-    document.getElementById('labelSearch').innerHTML = d.labelSearch;
-    document.getElementById('searchId').placeholder = d.searchPh;
-    document.getElementById('btnSearch').innerHTML = d.btnSearch;
-    document.getElementById('btnReset').innerHTML = d.btnReset;
-    // 複製提示切語言
-    document.getElementById('copiedTip').innerHTML = d.copied;
-    document.title = d.title;
-    document.getElementById('page_title')?.setAttribute('content', d.title);
-  }
-
-  // 語言選單切換
-  function toggleLangMenu() {
-    let menu = document.getElementById('langMenu');
-    menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
-  }
-  // 切換語言
-  function switchLang(lang) {
-    currentLang = lang;
-    localStorage.setItem('lotto_lang', lang);
-    document.getElementById('langMenu').style.display = 'none';
-    setLangUI();
-  }
-  // 點擊其他地方自動收起語言選單
-  window.addEventListener('click', function(e) {
-    let menu = document.getElementById('langMenu');
-    let btn = document.getElementById('currentLangBtn');
-    if (!menu.contains(e.target) && e.target !== btn) menu.style.display = 'none';
-  });
-
-  // 複製合約地址（加語言提示）
-  function copyContractAddr() {
-    const addr = document.getElementById('contractAddr').innerText;
-    navigator.clipboard.writeText(addr).then(() => {
+    function toggleLangMenu() {
+      let menu = document.getElementById('langMenu');
+      menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+    }
+    function switchLang(lang) {
+      window.currentLang = lang;
+      localStorage.setItem('lotto_lang', lang);
+      document.getElementById('langMenu').style.display = 'none';
+      setLangUI();
+      if (typeof window.onLangChanged === 'function') window.onLangChanged();
+    }
+    // 點擊其他地方自動收起語言選單
+    window.addEventListener('click', function(e) {
+      let menu = document.getElementById('langMenu');
+      let btn = document.getElementById('currentLangBtn');
+      if (!menu.contains(e.target) && e.target !== btn) menu.style.display = 'none';
+    });
+    // 複製合約地址（多語提示）
+    function copyContractAddr() {
+      const addr = document.getElementById('contractAddr').innerText;
       let el = document.getElementById('copyAddr');
       let tip = document.getElementById('copiedTip');
-      tip.style.display = 'inline';
-      el.classList.add('copied');
-      setTimeout(() => {
-        tip.style.display = 'none';
-        el.classList.remove('copied');
-      }, 1200);
-    });
-  }
-
-  // 頁面初始化
-  setLangUI();
-
-  // 查詢與回最新局功能請保持 main.js 裡原有邏輯
-
+      navigator.clipboard.writeText(addr).then(() => {
+        tip.style.display = 'inline';
+        el.classList.add('copied');
+        setTimeout(() => {
+          tip.style.display = 'none';
+          el.classList.remove('copied');
+        }, 1200);
+      });
+    }
+    // 初始化全局語言變數
+    window.currentLang = localStorage.getItem('lotto_lang') || 'zh';
+    window.setLangUI = setLangUI;
   </script>
 </body>
 </html>
